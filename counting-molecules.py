@@ -1,0 +1,361 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jun 17 10:30:03 2018
+
+@author: jack
+"""
+
+import os
+import numpy as np
+
+import matplotlib
+import matplotlib.pyplot as plt
+import pickle
+
+import nanonispy as nap
+
+import mahotas
+
+from scipy.spatial import distance
+from scipy import optimize as _optimize
+
+from sklearn.cluster import Birch, AgglomerativeClustering
+
+from skimage.draw import polygon
+from skimage.filters import gaussian, threshold_otsu # try_all_threshold
+from skimage.measure import find_contours
+
+
+
+### read sxm file, requires nanonispy
+
+def read_data(filename):
+    if filename.endswith(".sxm"):
+        scan = nap.read.Scan(filename)
+        
+        ## take the Z forward signal
+        im = scan.signals['Z']['forward']
+        if scan.header['scan_dir'] == 'down':
+            im = np.flipud(im)
+    
+        ## add mean values of image if scan is incomplete
+        im[np.isnan(im)] = np.mean(im[~np.isnan(im)])
+    
+        ## factor for converting between pixels/ realspace
+        rescale = scan.header['scan_range']/scan.header['scan_pixels']
+    elif filename.endswith(".p"):
+        d = pickle.load(open(filename, 'rb'))
+        im = d['image']
+        rescale = d['rescale']
+        
+    else:
+        print('not an sxm file')
+        return
+
+
+    return im, rescale
+
+
+
+
+### functions for doing a 2d plane fit to the image data:
+
+def _plane(a0, a1, b1, x0, y0):
+    return lambda x,y: a0 +a1*(x-x0) +b1*(y-y0)
+
+def _planemoments(data):
+    a0 = np.abs(data).min()
+    index = (data-a0).argmin()
+    x, y = data.shape
+    x0 = float(index / x)
+    y0 = float(index % y)
+    a1 = 0.0
+    b1 = 0.0
+    return a0, a1, b1, x0, y0
+
+def _fitplane(data):
+    params = _planemoments(data)
+    errorfunction = lambda p: np.ravel(_plane(*p)(*np.indices(data.shape)) - data)
+    p, success = _optimize.leastsq(errorfunction, params)
+    return p
+
+def _return_plane(params, data):
+    _fit_data = _plane(*params)
+    return _fit_data(*np.indices(data.shape))
+
+def plane_fit_2d(scan_image):
+    return scan_image - _return_plane(_fitplane(scan_image),scan_image)
+
+
+def filter_image(im, gaussian_pixels=50):
+    ## apply gaussian filtering
+    im = im - gaussian(im, gaussian_pixels)
+    ## normalize image
+    im = im/np.amax(im)
+
+    ## plane fit subtraction of image
+    im = plane_fit_2d(im)
+
+    return im
+
+
+
+### otsu to find the molecules in the filtered image
+
+def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), zernike_radius=None):
+    
+    ## use otsu to find the threshold for molecules
+    otsu_output = threshold_otsu(im)
+    ## find the contours using the otsu threshold
+    contours = find_contours(im, otsu_output)
+
+    ##set contour length threshold:
+    min_pixels = 2 * np.pi * np.sqrt(np.divide(minimum_radius**2, rescale[0]*rescale[1]))
+
+    ## find contours larger than the minimum radius
+    ## away from the edges of the image so they're "complete" molecules
+    real_contours = []
+    for c in contours:
+        if min(c[:,0]) > 2 and max(c[:,0]) < im.shape[0]-2:
+            if min(c[:,1]) > 2 and max(c[:,1]) < im.shape[1]-2:
+                if len(c) > min_pixels:
+                    real_contours.append(c)
+
+    ## concatenate contours within minimimum_separation of each other
+    new_contours = []
+    used_indexes = []
+    for ii, cc in enumerate(real_contours):
+        for jj, cc2 in enumerate(real_contours):
+            if jj>ii and ii not in used_indexes:
+                dist = distance.cdist(cc*rescale, cc2*rescale)
+                if np.amin(dist) < minimum_separation:
+                    cc = np.concatenate((cc, cc2))
+                    used_indexes.append(jj)
+        if ii not in used_indexes:
+            new_contours.append(cc)
+            
+    ### make a box that every contour will fit/ be rotatable in
+    boxsize = 0
+    diagonals = []
+    for c in new_contours:
+        x = c[:,1] #columns
+        y = c[:,0] #rows
+        xmin = int(np.min(x))
+        xmax = int(np.max(x))
+        ymin = int(np.min(y))
+        ymax = int(np.max(y))
+        if xmax - xmin > boxsize:
+            boxsize = xmax - xmin
+        if ymax - ymin > boxsize:
+            boxsize = ymax - ymin
+        diagonal = np.sqrt((xmin - xmax)**2 + (ymin - ymax)**2)
+        diagonals.append(diagonal)
+        if boxsize < diagonal:
+            boxsize = int(diagonal)
+    if boxsize/2 == 0:
+        boxsize = boxsize + 1
+    center = int(boxsize/2)
+    
+    
+    #### create templates of all contour'd molecules; find contour length and maximum pixel height
+    
+    templates = []
+    contour_lengths = []
+    max_pixels = []
+    
+    for ii, c in enumerate(new_contours):
+        poly = polygon(c[:,0], c[:,1])
+        template = np.zeros((boxsize, boxsize))
+        centerx_of_poly = int(np.mean(poly[0]))
+        centery_of_poly = int(np.mean(poly[1]))
+        translate_poly = (poly[0] - centerx_of_poly + center, poly[1] - centery_of_poly + center)
+        template[translate_poly] = im[poly] - otsu_output
+        templates.append(template)
+        
+        contour_lengths.append(len(c))
+        max_pixels.append(np.amax(template) - otsu_output)
+        
+    
+    ## normalize the contour lengths and the max pixel value
+    contour_lengths = [xx / max(contour_lengths) for xx in contour_lengths]
+    max_pixels = [xx / max(max_pixels) for xx in max_pixels]
+    
+    ### calculate the Zernike moments, add the normalized contour lengths and pixel_max to the moments arrays
+    
+    zernike_moments = []
+    
+    ### use median contour size as default zernike radius unless specified in function call
+    if zernike_radius == None:
+        zernike_radius = int(np.median(diagonals))
+        
+
+    for template, length, pixel in zip(templates, contour_lengths, max_pixels):
+        answer = mahotas.features.zernike_moments(template, radius=zernike_radius)
+        
+        ## append the contour length and the maximum height into the zernike_moments
+        
+        answer = np.append(answer, pixel)
+        answer = np.append(answer, length)
+        
+        zernike_moments.append(answer)
+        
+    ## convert list to np array
+    zernike_moments = np.asarray(zernike_moments)
+    
+
+    return new_contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments
+
+### use sklearn clustering to sort the contours into clusters according to euclidean distance of zernike coefficients
+
+def sort_contours(zernike_moments, manual_categories=None, Birch_threshold=.2, branching_factor=50):
+
+    if manual_categories is not None:
+        af = AgglomerativeClustering(n_clusters=manual_categories).fit(zernike_moments)
+    else:
+        af = Birch(n_clusters=manual_categories, threshold=Birch_threshold, branching_factor=branching_factor).fit(zernike_moments)
+
+    return af.labels_
+
+    
+##### plotting functions
+
+    
+def make_fig(shape, dpi=96.):
+    ''' return (fig, ax), without axes or white space '''
+    h, w = shape
+    dpi = float(dpi)
+    fig = plt.figure()
+    fig.set_size_inches(w/dpi, h/dpi, forward=True)
+    ax = plt.Axes(fig, [0,0,1,1])
+    ax.set_axis_off()
+    fig.add_axes(ax)
+
+    return fig, ax
+
+#### plot grid of templates
+
+def plot_template_grid(templates):
+    normtemplates = []
+    for temp in templates:
+        vmax = np.max(temp)
+        if vmax != 0:
+            normtemplates.append(temp/vmax)
+        else:
+            normtemplates.append(temp)
+    
+    ntemplates = len(templates)
+    griddim = int(np.ceil(np.sqrt(ntemplates)))
+    empty = np.zeros(np.shape(templates[0]))
+    for _ in range(griddim**2 - ntemplates):
+        normtemplates.append(empty)
+    
+    
+    ## plot an array of all the extracted templates
+    
+    pdim = griddim * np.shape(templates[0])[0]
+    fig, ax = make_fig((pdim, pdim))
+    chunks = [normtemplates[i:i+griddim] for i in range(0, len(templates), griddim)]
+    templategrid = np.vstack([np.hstack(chunk) for chunk in chunks])
+    plt.imshow(templategrid)
+    
+    return fig, ax
+
+
+def plot_contours_histogram(im, contours, rescale, sorted_labels, manual_categories=None, saveplot='no', filename=None):
+
+    partition = {k:0 for k in range(len(contours))}
+    
+    for index, ii in enumerate(sorted_labels):
+        partition[index] = ii + 1
+        
+    ### make the plot
+    
+    plt.figure(figsize=(20,10))
+    ax = plt.subplot(1,2,1)
+    ax2 = plt.subplot(1,2,2)
+    
+    extent = (0, im.shape[0]*rescale[0], im.shape[1]*rescale[1], 0)
+    ax.imshow(im, cmap='gray', extent=extent)
+    ax.set_xlabel('x (m)')
+    ax.set_ylabel('y (m)')
+    
+    cmap = matplotlib.cm.get_cmap('viridis')
+    cmap2 = matplotlib.cm.get_cmap('plasma_r')
+    
+    if manual_categories is not None:
+        numbins = int(manual_categories)
+    else:
+        numbins = max(partition.values())
+    
+    bins = np.bincount(list(partition.values()))
+    newbins = sorted(bins, reverse=True)
+    
+    new_partition = {k:0 for k in range(len(contours))}
+    next_identical = False
+    for ii in range(len(newbins)):
+        if next_identical == True:
+            i = -1
+            for j in range(2):
+                i = list(bins).index(newbins[ii], i + 1)
+            old_val = i
+            next_identical = False
+        else:
+            old_val = list(bins).index(newbins[ii])
+        if ii < len(newbins)-1:
+            if newbins[ii+1] == newbins[ii]:
+                next_identical = True
+        mask = []
+        for index, value in partition.items():
+            if value == old_val:
+                mask.append(index)
+        for jj in mask:
+            new_partition[jj] = ii
+    partition = new_partition
+    
+    newbins = newbins[:numbins]
+    errors = np.sqrt(newbins)
+    
+    colors = []
+    for ii in range(numbins):
+        if ii % 2 == 0:
+            colors.append(cmap(ii/numbins))
+        else:
+            colors.append(cmap2(ii/numbins))
+    
+    for ii, c in zip(partition.keys(), contours):
+        color = colors[partition[ii]]
+        tempx = np.multiply(c[:,1], rescale[0])
+        tempy = np.multiply(c[:,0], rescale[1])
+        ax.plot(tempx, tempy, c=color, linewidth=1.5)
+    
+        #use this line to number all the molecules
+        #ax.annotate(str(ii), xy=(tempx[0], tempy[0]), color='g')
+    
+    ax2.bar(range(len(newbins)), newbins, color=colors, yerr=errors)
+    
+    # ax2.hist(bins, bins=len(bins))
+    title = "total categories = " + str(max(partition.values()) + 1) + " total molecules = " + str(len(contours))
+    ax2.set_title(title)
+    ax2.set_xlabel('molecule category')
+    ax2.set_ylabel('count')
+    
+    if saveplot == 'yes':
+        if filename is None:
+            filename = 'output_plot'
+        savename = filename + '.png'
+        plt.savefig(savename)
+
+
+def default_sort(filename, manual_categories=None, Birch_threshold=.2):
+    im, rescale = read_data(filename)
+    im = filter_image(im)
+    contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments = get_contours(im, rescale=rescale, minimum_separation=0)
+    sorted_labels = sort_contours(zernike_moments, manual_categories=manual_categories, Birch_threshold=Birch_threshold)
+    plot_contours_histogram(im, contours, rescale, sorted_labels, manual_categories=manual_categories, saveplot='yes', filename=filename)
+    
+
+# for file in os.listdir('test_dir'):
+#     filename = 'test_dir/' + file
+#     default_sort(filename)
+

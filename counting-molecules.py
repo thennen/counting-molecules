@@ -314,7 +314,6 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, manual_categor
     partition = new_partition
     
     newbins = newbins[:numbins]
-    errors = np.sqrt(newbins)
     
     colors = []
     for ii in range(numbins):
@@ -332,7 +331,7 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, manual_categor
         #use this line to number all the molecules
         #ax.annotate(str(ii), xy=(tempx[0], tempy[0]), color='g')
     
-    ax2.bar(range(len(newbins)), newbins, color=colors, yerr=errors)
+    ax2.bar(range(len(newbins)), newbins, color=colors)
     
     # ax2.hist(bins, bins=len(bins))
     title = "total categories = " + str(max(partition.values()) + 1) + " total molecules = " + str(len(contours))
@@ -355,7 +354,9 @@ def default_sort(filename, manual_categories=None, Birch_threshold=.2):
     plot_contours_histogram(im, contours, rescale, sorted_labels, manual_categories=manual_categories, saveplot='yes', filename=filename)
     
 
-# for file in os.listdir('test_dir'):
-#     filename = 'test_dir/' + file
-#     default_sort(filename)
+#for file in os.listdir('test_dir'):
+#    if file.startswith('.') is False and file.endswith('.png') is False:
+#        filename = 'test_dir/' + file
+##        default_sort(filename, manual_categories=5)
+#        default_sort(filename, Birch_threshold=.2)
 

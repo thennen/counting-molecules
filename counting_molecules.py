@@ -31,12 +31,12 @@ import pairwise_chirality
 
 ### read sxm file, requires nanonispy
 
-def read_data(filename):
+def read_data(filename, channel='Z', direction='forward'):
     if filename.endswith(".sxm"):
         scan = nap.read.Scan(filename)
         
         ## take the Z forward signal
-        im = scan.signals['Z']['forward']
+        im = scan.signals[channel][direction]
         if scan.header['scan_dir'] == 'down':
             im = np.flipud(im)
     

@@ -7,11 +7,14 @@ Created on Sun Jun 17 10:30:03 2018
 """
 
 import os
+import pickle
 import numpy as np
 
 import matplotlib
+#matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
-import pickle
+
 
 import nanonispy as nap
 
@@ -20,12 +23,12 @@ import mahotas
 from scipy.spatial import distance
 from scipy import optimize as _optimize
 
+import sklearn.cluster
 from sklearn.cluster import Birch, AgglomerativeClustering
 
 from skimage.draw import polygon
 from skimage.filters import gaussian, threshold_otsu # try_all_threshold
-from skimage.measure import find_contours
-
+from skimage.measure import find_contours, moments_central, moments_hu
 
 
 ### read sxm file, requires nanonispy
@@ -84,7 +87,7 @@ def _return_plane(params, data):
     _fit_data = _plane(*params)
     return _fit_data(*np.indices(data.shape))
 
-def plane_fit_2d(scan_image):
+def _plane_fit_2d(scan_image):
     return scan_image - _return_plane(_fitplane(scan_image),scan_image)
 
 
@@ -95,7 +98,7 @@ def filter_image(im, gaussian_pixels=50):
     im = im/np.amax(im)
 
     ## plane fit subtraction of image
-    im = plane_fit_2d(im)
+    im = _plane_fit_2d(im)
 
     return im
 
@@ -209,7 +212,7 @@ def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), 
 ### use sklearn clustering to sort the contours into clusters according to euclidean distance of zernike coefficients
 
 def sort_contours(zernike_moments, manual_categories=None, Birch_threshold=.2, branching_factor=50):
-
+    
     if manual_categories is not None:
         af = AgglomerativeClustering(n_clusters=manual_categories).fit(zernike_moments)
     else:
@@ -261,8 +264,30 @@ def plot_template_grid(templates):
     
     return fig, ax
 
+#### plot numbered contours
 
-def plot_contours_histogram(im, contours, rescale, sorted_labels, manual_categories=None, saveplot='no', filename=None):
+def plot_unsorted(im, real_contours, filename, rescale=(1,1)):
+    plt.figure(figsize=(10,10))
+    extent = (0, im.shape[0]*rescale[0], im.shape[1]*rescale[1], 0)
+    plt.imshow(im, cmap='gray', extent=extent)
+    plt.gca().set_xlabel('x (m)')
+    plt.gca().set_ylabel('y (m)')
+    for i, c in enumerate(real_contours):
+        tempx = np.multiply(c[:,1], rescale[0])
+        tempy = np.multiply(c[:,0], rescale[1])
+        plt.plot(tempx, tempy, c='lime', linewidth=1)
+        annotatex = np.mean(tempx)
+        annotatey = np.mean(tempy)
+        plt.text(annotatex, annotatey, i, color='red',
+                    verticalalignment='center', horizontalalignment='center')
+    temp = str(filename) + "_image_with_contours.png"
+    print('Wrote file: {}'.format(temp))
+    plt.savefig(temp, bbox_inches='tight')
+
+    return
+
+
+def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot='no', filename=None):
 
     partition = {k:0 for k in range(len(contours))}
     
@@ -283,10 +308,8 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, manual_categor
     cmap = matplotlib.cm.get_cmap('viridis')
     cmap2 = matplotlib.cm.get_cmap('plasma_r')
     
-    if manual_categories is not None:
-        numbins = int(manual_categories)
-    else:
-        numbins = max(partition.values())
+
+    numbins = max(partition.values())
     
     bins = np.bincount(list(partition.values()))
     newbins = sorted(bins, reverse=True)
@@ -354,9 +377,9 @@ def default_sort(filename, manual_categories=None, Birch_threshold=.2):
     plot_contours_histogram(im, contours, rescale, sorted_labels, manual_categories=manual_categories, saveplot='yes', filename=filename)
     
 
+#plt.close('all')
 #for file in os.listdir('test_dir'):
 #    if file.startswith('.') is False and file.endswith('.png') is False:
 #        filename = 'test_dir/' + file
-##        default_sort(filename, manual_categories=5)
+##        default_sort(filename, manual_categories=8)
 #        default_sort(filename, Birch_threshold=.2)
-

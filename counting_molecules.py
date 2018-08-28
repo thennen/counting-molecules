@@ -14,7 +14,6 @@ import matplotlib
 
 import matplotlib.pyplot as plt
 
-
 import nanonispy as nap
 
 import mahotas
@@ -22,12 +21,13 @@ import mahotas
 from scipy.spatial import distance
 from scipy import optimize as _optimize
 
-from sklearn.cluster import Birch, AgglomerativeClustering
+from sklearn.cluster import AffinityPropagation
 
 from skimage.draw import polygon
 from skimage.filters import gaussian, threshold_otsu
 from skimage.measure import find_contours
 
+import pairwise_chirality
 
 ### read sxm file, requires nanonispy
 
@@ -207,16 +207,19 @@ def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), 
 
     return new_contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments
 
-### use sklearn clustering to sort the contours into clusters according to euclidean distance of zernike coefficients
+### use sklearn clustering to categorize the contours by clustering
 
-def sort_contours(zernike_moments, manual_categories=None, Birch_threshold=.2, branching_factor=50):
-    
-    if manual_categories is not None:
-        af = AgglomerativeClustering(n_clusters=manual_categories).fit(zernike_moments)
-    else:
-        af = Birch(n_clusters=manual_categories, threshold=Birch_threshold, branching_factor=branching_factor).fit(zernike_moments)
+def sort_contours(zernike_moments, damping=.7, exemplars=None):
+
+    preferences = -10 * np.ones(zernike_moments.shape[0])
+    preferences[exemplars] = 0
+
+    af = AffinityPropagation(damping=damping, preference=preferences).fit(zernike_moments)
 
     return af.labels_
+
+def sort_chirality(templates, sorted_labels, nrotations=10):
+    return pairwise_chirality.sort_chirality(templates, sorted_labels, nrotations=nrotations)
 
     
 ##### plotting functions

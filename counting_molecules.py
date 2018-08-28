@@ -6,7 +6,6 @@ Created on Sun Jun 17 10:30:03 2018
 @author: jack
 """
 
-import os
 import pickle
 import numpy as np
 
@@ -23,12 +22,11 @@ import mahotas
 from scipy.spatial import distance
 from scipy import optimize as _optimize
 
-import sklearn.cluster
 from sklearn.cluster import Birch, AgglomerativeClustering
 
 from skimage.draw import polygon
-from skimage.filters import gaussian, threshold_otsu # try_all_threshold
-from skimage.measure import find_contours, moments_central, moments_hu
+from skimage.filters import gaussian, threshold_otsu
+from skimage.measure import find_contours
 
 
 ### read sxm file, requires nanonispy

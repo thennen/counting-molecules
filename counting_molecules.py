@@ -221,8 +221,8 @@ def sort_contours(zernike_moments, damping=.7, exemplars=None):
 
     return af.labels_
 
-def sort_chirality(templates, sorted_labels, nrotations=10):
-    return pairwise_chirality.sort_chirality(templates, sorted_labels, nrotations=nrotations)
+def sort_chirality(templates, sorted_labels, nrotations=10, category_indexes=None):
+    return pairwise_chirality.sort_chirality(templates, sorted_labels, nrotations=nrotations, category_indexes=category_indexes)
 
     
 ##### plotting functions
@@ -368,9 +368,10 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False
     
     if saveplot == True:
         if filename is None:
-            filename = 'output_plot'
+            filename = 'output_histogram'
         savename = filename + '.png'
         plt.savefig(savename)
+    return
 
 
 def default_sort(filename, sort_by_chirality=False):

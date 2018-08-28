@@ -74,11 +74,14 @@ def _compare_templates(template, template2):
     return corr
 
 
-def sort_chirality(templates, sorted_labels, nrotations=10):
+def sort_chirality(templates, sorted_labels, nrotations=10, category_indexes=None):
     new_labels = [ii for ii in sorted_labels]
     templates = _np.array(templates)
-
-    for category in range(max(sorted_labels)):
+    
+    if category_indexes == None:
+        category_indexes = [ii for ii in range(max(sorted_labels))]
+    
+    for category in category_indexes:
     
         mask = sorted_labels == category
         subset = templates[mask == True]

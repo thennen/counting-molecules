@@ -291,7 +291,7 @@ def plot_unsorted(im, real_contours, filename, rescale=(1,1)):
     return
 
 
-def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot='no', filename=None):
+def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False, filename=None):
 
     partition = {k:0 for k in range(len(contours))}
     
@@ -366,7 +366,7 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot='no',
     ax2.set_xlabel('molecule category')
     ax2.set_ylabel('count')
     
-    if saveplot == 'yes':
+    if saveplot == True:
         if filename is None:
             filename = 'output_plot'
         savename = filename + '.png'
@@ -380,4 +380,4 @@ def default_sort(filename, sort_by_chirality=False):
     sorted_labels = sort_contours(zernike_moments)
     if sort_by_chirality == True:
         sorted_labels = sort_chirality(templates, sorted_labels)
-    plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot='yes', filename=filename)
+    plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=True, filename=filename)

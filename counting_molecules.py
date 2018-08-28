@@ -210,6 +210,9 @@ def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), 
 ### use sklearn clustering to categorize the contours by clustering
 
 def sort_contours(zernike_moments, damping=.7, exemplars=None):
+    
+    if exemplars == None:
+        exemplars = []
 
     preferences = -10 * np.ones(zernike_moments.shape[0])
     preferences[exemplars] = 0
@@ -370,17 +373,11 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot='no',
         plt.savefig(savename)
 
 
-def default_sort(filename, manual_categories=None, Birch_threshold=.2):
+def default_sort(filename, sort_by_chirality=False):
     im, rescale = read_data(filename)
     im = filter_image(im)
     contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments = get_contours(im, rescale=rescale, minimum_separation=0)
-    sorted_labels = sort_contours(zernike_moments, manual_categories=manual_categories, Birch_threshold=Birch_threshold)
-    plot_contours_histogram(im, contours, rescale, sorted_labels, manual_categories=manual_categories, saveplot='yes', filename=filename)
-    
-
-#plt.close('all')
-#for file in os.listdir('test_dir'):
-#    if file.startswith('.') is False and file.endswith('.png') is False:
-#        filename = 'test_dir/' + file
-##        default_sort(filename, manual_categories=8)
-#        default_sort(filename, Birch_threshold=.2)
+    sorted_labels = sort_contours(zernike_moments)
+    if sort_by_chirality == True:
+        sorted_labels = sort_chirality(templates, sorted_labels)
+    plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot='yes', filename=filename)

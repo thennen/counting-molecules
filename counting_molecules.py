@@ -212,14 +212,17 @@ def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), 
 def sort_contours(zernike_moments, damping=.7, exemplars=None):
     
     if exemplars == None:
-        exemplars = []
+        # from sklearn.cluster import Birch
+        # af = Birch(threshold=.2, n_clusters=None).fit(zernike_moments)
+        af = AffinityPropagation(damping=damping).fit(zernike_moments)
+        return af.labels_
+    else:
+        preferences = -10 * np.ones(zernike_moments.shape[0])
+        preferences[exemplars] = 0
 
-    preferences = -10 * np.ones(zernike_moments.shape[0])
-    preferences[exemplars] = 0
+        af = AffinityPropagation(damping=damping, preference=preferences).fit(zernike_moments)
 
-    af = AffinityPropagation(damping=damping, preference=preferences).fit(zernike_moments)
-
-    return af.labels_
+        return af.labels_
 
 def sort_chirality(templates, sorted_labels, nrotations=10, category_indexes=None):
     return pairwise_chirality.sort_chirality(templates, sorted_labels, nrotations=nrotations, category_indexes=category_indexes)
@@ -378,7 +381,7 @@ def default_sort(filename, sort_by_chirality=False):
     im, rescale = read_data(filename)
     im = filter_image(im)
     contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments = get_contours(im, rescale=rescale, minimum_separation=0)
-    sorted_labels = sort_contours(zernike_moments)
+    sorted_labels = sort_contours(zernike_moments, damping=.9)
     if sort_by_chirality == True:
         sorted_labels = sort_chirality(templates, sorted_labels)
     plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=True, filename=filename)

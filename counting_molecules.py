@@ -381,7 +381,7 @@ def default_sort(filename, sort_by_chirality=False):
     im, rescale = read_data(filename)
     im = filter_image(im)
     contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments = get_contours(im, rescale=rescale, minimum_separation=0)
-    sorted_labels = sort_contours(zernike_moments, damping=.9)
+    sorted_labels = sort_contours(zernike_moments, damping=.7)
     if sort_by_chirality == True:
         sorted_labels = sort_chirality(templates, sorted_labels)
     plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=True, filename=filename)

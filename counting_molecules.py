@@ -21,7 +21,7 @@ import mahotas
 from scipy.spatial import distance
 from scipy import optimize as _optimize
 
-from sklearn.cluster import AffinityPropagation
+from sklearn.cluster import AffinityPropagation, Birch
 
 from skimage.draw import polygon
 from skimage.filters import gaussian, threshold_otsu
@@ -209,14 +209,12 @@ def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), 
 
 ### use sklearn clustering to categorize the contours by clustering
 
-def sort_contours(zernike_moments, damping=.7, exemplars=None):
+def sort_contours(zernike_moments, damping=.7, exemplars=None, method=None, n_clusters=None):
     
-    if exemplars == None:
-        # from sklearn.cluster import Birch
-        # af = Birch(threshold=.2, n_clusters=None).fit(zernike_moments)
-        af = AffinityPropagation(damping=damping).fit(zernike_moments)
+    if exemplars == None and (method == None or method == 'Birch'):
+        af = Birch(threshold=damping, n_clusters=n_clusters).fit(zernike_moments)
         return af.labels_
-    else:
+    elif exemplars is not None or method == 'AffinityPropagation':
         preferences = -10 * np.ones(zernike_moments.shape[0])
         preferences[exemplars] = 0
 
@@ -381,7 +379,7 @@ def default_sort(filename, sort_by_chirality=False):
     im, rescale = read_data(filename)
     im = filter_image(im)
     contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments = get_contours(im, rescale=rescale, minimum_separation=0)
-    sorted_labels = sort_contours(zernike_moments, damping=.5)
+    sorted_labels = sort_contours(zernike_moments, damping=.3, method='Birch')
     if sort_by_chirality == True:
         sorted_labels = sort_chirality(templates, sorted_labels)
     plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=True, filename=filename)

@@ -21,7 +21,7 @@ import mahotas
 from scipy.spatial import distance
 from scipy import optimize as _optimize
 
-from sklearn.cluster import AffinityPropagation, Birch
+from sklearn.cluster import AffinityPropagation, Birch, AgglomerativeClustering
 
 from skimage.draw import polygon
 from skimage.filters import gaussian, threshold_otsu
@@ -211,9 +211,14 @@ def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), 
 
 def sort_contours(zernike_moments, damping=.7, exemplars=None, method=None, n_clusters=None):
     
-    if exemplars == None and (method == None or method == 'Birch'):
+    if exemplars == None and (method == None or method == 'Birch') and n_clusters == None:
         af = Birch(threshold=damping, n_clusters=n_clusters).fit(zernike_moments)
         return af.labels_
+        
+    elif n_clusters is not None and (method == None or method == 'AgglomerativeClustering'):
+        af = AgglomerativeClustering(n_clusters=n_clusters).fit(zernike_moments)
+        return af.labels_
+        
     elif exemplars is not None or method == 'AffinityPropagation':
         preferences = -10 * np.ones(zernike_moments.shape[0])
         preferences[exemplars] = 0

@@ -375,6 +375,197 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False
     return
 
 
+#### interactive manual sorting
+
+def manual_resorting(pickle_file=None, filename=None, im=None, contours=None, partition=None, manual_categories=None, rescale=(1,1)):
+    if not pickle_file is None:
+        d = pickle.load(open(pickle_file, 'rb'))
+        filename = d['filename']
+        im = d['image']
+        contours = d['contours']
+        partition = d['partition']
+        rescale = d['rescale']
+        
+        if manual_categories is None:
+            manual_categories = d['manual_categories']
+    
+    manual_categories = int(manual_categories)
+
+    fig = plt.figure(figsize=(20,10))
+    gs = matplotlib.gridspec.GridSpec(1,2)
+    ax = plt.subplot(gs[0])
+    ax2 = plt.subplot(gs[1])
+
+    extent = (0, im.shape[0]*rescale[0], im.shape[1]*rescale[1], 0)
+    ax.imshow(im, cmap='gray', extent=extent) #, vmin=np.amin(im)*.1)
+    ax.set_xlabel('x (m)')
+    ax.set_ylabel('y (m)')
+
+    cmap = matplotlib.cm.get_cmap('viridis')
+    cmap2 = matplotlib.cm.get_cmap('plasma_r')
+
+
+    if manual_categories is not None:
+        numbins = int(manual_categories)
+    else:
+        numbins = max(partition.values())
+
+    bins = np.bincount(list(partition.values()))
+    newbins = sorted(bins, reverse=True)
+
+    new_partition = {k:0 for k in range(len(contours))}
+    next_identical = False
+    for ii in range(len(newbins)):
+        if next_identical == True:
+            i = -1
+            for j in range(2):
+                i = list(bins).index(newbins[ii], i + 1)
+            old_val = i
+            next_identical = False
+        else:
+            old_val = list(bins).index(newbins[ii])
+        if ii < len(newbins)-1:
+            if newbins[ii+1] == newbins[ii]:
+                next_identical = True
+        mask = []
+        for index, value in partition.items():
+            if value == old_val:
+                mask.append(index)
+        for jj in mask:
+            new_partition[jj] = ii
+    partition = new_partition
+
+    newbins = newbins[:numbins]
+    errors = np.sqrt(newbins)
+
+    colors = []
+    for ii in range(numbins):
+        if ii % 2 == 0:
+            colors.append(cmap(ii/numbins))
+        else:
+            colors.append(cmap2(ii/numbins))
+    colors.append('black')
+
+    for ii, c in zip(partition.keys(), contours):
+        if partition[ii] < len(colors):
+            color = colors[partition[ii]]
+        else:
+            color = 'black'
+        tempx = np.multiply(c[:,1], rescale[0])
+        tempy = np.multiply(c[:,0], rescale[1])
+        ax.plot(tempx, tempy, c=color, linewidth=1.5)
+
+        #use this line to number all the molecules
+        #ax.annotate(str(ii), xy=(tempx[0], tempy[0]), color='g')
+
+        tempx = np.multiply(c[:,1], rescale[0])
+        tempy = np.multiply(c[:,0], rescale[1])
+        ax.plot(tempx, tempy, c=color, linewidth=1.5)
+
+    bins = newbins
+    bins = bins / np.sum(bins)
+    errors = np.zeros(len(bins))
+
+    rects = ax2.bar(range(len(bins)), bins, color=colors, yerr=errors)
+    title = " total molecules = " + str(len(contours))
+    ax2.set_title(title)
+    ax2.set_xlabel('molecule category')
+    ax2.set_ylabel('fraction of total count')
+    
+    for rect in rects:
+        height = rect.get_height()
+        height = height * len(contours)
+        ax2.text(rect.get_x()+ rect.get_width()/2., 1.05*rect.get_height(), '%d' % int(height), ha='center', va='bottom')
+
+
+    key_color = 0
+
+    def onclick(event):
+        global key_color
+        xclick = event.xdata
+        yclick = event.ydata
+        ax.cla()
+        ax.imshow(im, cmap='gray', extent=extent)#, vmin=np.amin(im)*.1)
+        ax.set_xlabel('x (m)')
+        ax.set_ylabel('y (m)')
+
+        for ii, c in zip(partition.keys(), contours):
+            xmin = min(c[:,1])*rescale[0]
+            xmax = max(c[:,1])*rescale[0]
+            ymin = min(c[:,0])*rescale[1]
+            ymax = max(c[:,0])*rescale[1]
+
+            if xclick < xmax and xclick > xmin and yclick < ymax and yclick > ymin:
+                if not type(key_color) is int:
+                    key_color = 0
+                if key_color > len(colors):
+                    color = 'black'
+                else:
+                    color = colors[key_color]
+                partition[ii] = key_color
+                tempx = np.multiply(c[:,1], rescale[0])
+                tempy = np.multiply(c[:,0], rescale[1])
+                ax.plot(tempx, tempy, c=color, linewidth=1.5)
+            else:
+                if partition[ii] < len(colors):
+                    color = colors[partition[ii]]
+                else:
+                    color = 'black'
+                tempx = np.multiply(c[:,1], rescale[0])
+                tempy = np.multiply(c[:,0], rescale[1])
+                ax.plot(tempx, tempy, c=color, linewidth=1.5)
+
+        bins = np.bincount(list(partition.values()))
+        errors = np.sqrt(bins)
+        bins = bins / np.sum(bins)
+        errors = np.zeros(len(bins))
+        ax2.cla()
+        rects = ax2.bar(range(len(bins)), bins, color=colors, yerr=errors)
+        title = " total molecules = " + str(len(contours))
+        ax2.set_title(title)
+        ax2.set_xlabel('molecule category')
+        ax2.set_ylabel('fraction of total count')
+        
+        for rect in rects:
+            height = rect.get_height()
+            height = height * len(contours)
+            ax2.text(rect.get_x()+ rect.get_width()/2., 1.05*rect.get_height(), '%d' % int(height), ha='center', va='bottom')
+        
+        fig.canvas.draw()
+
+
+    def keypress(event):
+        global key_color, quit_fig
+        try:
+            key_color = int(event.key)
+        except:
+            key_color = 0
+        if event.key == 'o':
+            export = {'filename':filename, 'image':im, 'contours':contours, 'rescale':rescale, 'partition':partition, 'manual_categories':manual_categories}
+            save_name = str(filename) + '_manually_sorted.p'
+            f = open(save_name, 'wb')
+            pickle.dump(export, f)
+            f.close()
+        if event.key == 'q':
+            quit_fig = True
+
+
+    fig.canvas.mpl_connect('key_press_event', keypress)
+    fig.canvas.mpl_connect('button_press_event', onclick)
+    plt.show()
+    
+    global quit_fig
+    quit_fig = False    
+    while quit_fig == False:
+        plt.pause(.05)
+        pass
+    
+    plt.close()
+    
+    return partition
+
+### default sorting function
+
 def default_sort(filename, sort_by_chirality=False):
     im, rescale = read_data(filename)
     im = filter_image(im)

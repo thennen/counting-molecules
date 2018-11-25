@@ -18,24 +18,24 @@ im, rescale = ctm.read_data(filename)
 im = ctm.filter_image(im)
 
 ## extract the contours, templates for each molecule; contour lenghts, maximum height and Zernike moments
-contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments = ctm.get_contours(im, rescale=rescale)
+contours_dict = ctm.get_contours(im, rescale=rescale)
 
 ## plot the extracted contours, labelled by number, for selection of category exemplars
-ctm.plot_unsorted(im, contours, filename, rescale=rescale)
+ctm.plot_unsorted(im, contours_dict['contours'], filename, rescale=rescale)
 
 ## exemplar indices for the Helicene_Ag(111)008.sxm image
 exemplars = [1, 2, 15, 21, 34, 52, 84]
 
 ## sort the molecules into categories
-sorted_labels = ctm.sort_contours(zernike_moments, exemplars=exemplars)
+sorted_labels = ctm.sort_contours(contours_dict['zernike_moments'], exemplars=exemplars)
 
 ## plot the sorted, histogram'd molecules:
-ctm.plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=True, filename=filename)
+ctm.plot_contours_histogram(im, contours_dict['contours'], rescale, sorted_labels, saveplot=True, filename=filename)
 
 ## select the categories that need chiral sorting:
 category_indexes=[0]
 
 ## re-sort the desired categories, separating by chirality
-sorted_labels = ctm.sort_chirality(templates, sorted_labels, category_indexes=category_indexes)
+sorted_labels = ctm.sort_chirality(contours_dict['templates'], sorted_labels, category_indexes=category_indexes)
 
-ctm.plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=True, filename=filename)
+ctm.plot_contours_histogram(im, contours_dict['contours'], rescale, sorted_labels, saveplot=True, filename=filename)

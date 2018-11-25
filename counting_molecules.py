@@ -204,8 +204,18 @@ def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), 
     ## convert list to np array
     zernike_moments = np.asarray(zernike_moments)
     
+    ## define return dictionary of variables
+    contours_dict = {}
+    contours_dict['image'] = im
+    contours_dict['rescale'] = rescale
+    contours_dict['contours'] = new_contours
+    contours_dict['otsu_threshold'] = otsu_output
+    contours_dict['templates'] = templates
+    contours_dict['contour_lengths'] = contour_lengths
+    contours_dict['max_pixels'] = max_pixels
+    contours_dict['zernike_moments'] = zernike_moments
 
-    return new_contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments
+    return contours_dict
 
 ### use sklearn clustering to categorize the contours by clustering
 
@@ -228,7 +238,8 @@ def sort_contours(zernike_moments, damping=.7, exemplars=None, method=None, n_cl
         return af.labels_
 
 def sort_chirality(templates, sorted_labels, nrotations=10, category_indexes=None):
-    return pairwise_chirality.sort_chirality(templates, sorted_labels, nrotations=nrotations, category_indexes=category_indexes)
+    chiral_labels = pairwise_chirality.sort_chirality(templates, sorted_labels, nrotations=nrotations, category_indexes=category_indexes)
+    return chiral_labels
 
     
 ##### plotting functions

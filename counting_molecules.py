@@ -32,6 +32,9 @@ import pairwise_chirality
 ### read sxm file, requires nanonispy
 
 def read_data(filename, channel='Z', direction='forward'):
+    """
+    Returns image array and rescaling tuple from file.
+    """
     if filename.endswith(".sxm"):
         scan = nap.read.Scan(filename)
         
@@ -63,9 +66,11 @@ def read_data(filename, channel='Z', direction='forward'):
 ### functions for doing a 2d plane fit to the image data:
 
 def _plane(a0, a1, b1, x0, y0):
+    """ Returns 2d plane parameters """
     return lambda x,y: a0 +a1*(x-x0) +b1*(y-y0)
 
 def _planemoments(data):
+    """ Returns initial plane parameters from input data. """
     a0 = np.abs(data).min()
     index = (data-a0).argmin()
     x, y = data.shape
@@ -76,20 +81,24 @@ def _planemoments(data):
     return a0, a1, b1, x0, y0
 
 def _fitplane(data):
+    """ Returns optimized plane fit parameters. """
     params = _planemoments(data)
     errorfunction = lambda p: np.ravel(_plane(*p)(*np.indices(data.shape)) - data)
     p, success = _optimize.leastsq(errorfunction, params)
     return p
 
 def _return_plane(params, data):
+    """ Returns plane fit array the shape of original data. """
     _fit_data = _plane(*params)
     return _fit_data(*np.indices(data.shape))
 
 def _plane_fit_2d(scan_image):
+    """ Returns the difference of the plane fit and original data. """
     return scan_image - _return_plane(_fitplane(scan_image),scan_image)
 
 
 def filter_image(im, gaussian_pixels=50):
+    """ Returns a Gaussian filtered and plane fit subtracted image array. """
     ## apply gaussian filtering
     im = im - gaussian(im, gaussian_pixels)
     ## normalize image
@@ -105,6 +114,7 @@ def filter_image(im, gaussian_pixels=50):
 ### otsu to find the molecules in the filtered image
 
 def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), zernike_radius=None):
+    """ Returns a dictionary of molecule contours, Zernike moments, and other relevant physical criteria. """
     
     ## use otsu to find the threshold for molecules
     otsu_output = threshold_otsu(im)
@@ -220,6 +230,7 @@ def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), 
 ### use sklearn clustering to categorize the contours by clustering
 
 def sort_contours(zernike_moments, damping=.7, exemplars=None, method=None, n_clusters=None):
+    """ Returns list of labels corresponding to molecule contour categories. """
     
     if exemplars == None and (method == None or method == 'Birch') and n_clusters == None:
         af = Birch(threshold=damping, n_clusters=n_clusters).fit(zernike_moments)
@@ -260,6 +271,7 @@ def make_fig(shape, dpi=96.):
 #### plot grid of templates
 
 def plot_template_grid(templates):
+    """ Returns (fig, ax) grid of all centered molecule templates. """
     normtemplates = []
     for temp in templates:
         vmax = np.max(temp)
@@ -288,6 +300,7 @@ def plot_template_grid(templates):
 #### plot numbered contours
 
 def plot_unsorted(im, real_contours, filename, rescale=(1,1)):
+    """ Saves png figure of outlined molecule contours, labelled by integers. """
     plt.figure(figsize=(10,10))
     extent = (0, im.shape[0]*rescale[0], im.shape[1]*rescale[1], 0)
     plt.imshow(im, cmap='gray', extent=extent)
@@ -309,6 +322,7 @@ def plot_unsorted(im, real_contours, filename, rescale=(1,1)):
 
 
 def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False, filename=None):
+    """ Saves png of sorted molecules, outlined, with corresponding histogram. """
 
     partition = {k:0 for k in range(len(contours))}
     
@@ -394,6 +408,7 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False
 #### interactive manual sorting
 
 def manual_resorting(pickle_file=None, filename=None, im=None, contours=None, partition=None, manual_categories=None, rescale=(1,1)):
+    """ Creates interactive plot to manually resort molecule contours, returns user selected list of contour labels. """
     if not pickle_file is None:
         d = pickle.load(open(pickle_file, 'rb'))
         filename = d['filename']
@@ -583,6 +598,7 @@ def manual_resorting(pickle_file=None, filename=None, im=None, contours=None, pa
 ### default sorting function
 
 def default_sort(filename, sort_by_chirality=False):
+    """ Saves png images of sorted molecule histogram using default sorting parameters. """
     im, rescale = read_data(filename)
     im = filter_image(im)
     contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments = get_contours(im, rescale=rescale, minimum_separation=0)

@@ -302,7 +302,7 @@ def plot_template_grid(templates):
 def plot_unsorted(im, real_contours, filename, rescale=(1,1)):
     """ Saves png figure of outlined molecule contours, labelled by integers. """
     plt.figure(figsize=(10,10))
-    extent = (0, im.shape[0]*rescale[0], im.shape[1]*rescale[1], 0)
+    extent = (0, im.shape[1]*rescale[1], im.shape[0]*rescale[0], 0)
     plt.imshow(im, cmap='gray', extent=extent)
     plt.gca().set_xlabel('x (m)')
     plt.gca().set_ylabel('y (m)')
@@ -335,7 +335,7 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False
     ax = plt.subplot(1,2,1)
     ax2 = plt.subplot(1,2,2)
     
-    extent = (0, im.shape[0]*rescale[0], im.shape[1]*rescale[1], 0)
+    extent = (0, im.shape[1]*rescale[1], im.shape[0]*rescale[0], 0)
     ax.imshow(im, cmap='gray', extent=extent)
     ax.set_xlabel('x (m)')
     ax.set_ylabel('y (m)')
@@ -427,7 +427,7 @@ def manual_resorting(pickle_file=None, filename=None, im=None, contours=None, pa
     ax = plt.subplot(gs[0])
     ax2 = plt.subplot(gs[1])
 
-    extent = (0, im.shape[0]*rescale[0], im.shape[1]*rescale[1], 0)
+    extent = (0, im.shape[1]*rescale[1], im.shape[0]*rescale[0], 0)
     ax.imshow(im, cmap='gray', extent=extent) #, vmin=np.amin(im)*.1)
     ax.set_xlabel('x (m)')
     ax.set_ylabel('y (m)')

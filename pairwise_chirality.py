@@ -88,7 +88,7 @@ def sort_chirality(templates, sorted_labels, nrotations=10, category_indexes=Non
     
     for category in category_indexes:
     
-        mask = sorted_labels == category
+        mask = _np.array(sorted_labels) == category
         subset = templates[mask == True]
         
         ## pre-rotate all the templates

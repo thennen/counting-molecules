@@ -24,7 +24,7 @@ from scipy import optimize as _optimize
 from sklearn.cluster import AffinityPropagation, Birch, AgglomerativeClustering
 
 from skimage.draw import polygon
-from skimage.filters import gaussian, threshold_otsu
+from skimage.filters import gaussian, threshold_otsu, threshold_local
 from skimage.measure import find_contours
 
 import pairwise_chirality
@@ -113,13 +113,17 @@ def filter_image(im, gaussian_pixels=50):
 
 ### otsu to find the molecules in the filtered image
 
-def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), zernike_radius=None):
+def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), zernike_radius=None, block_size=35, offset=-.5):
     """ Returns a dictionary of molecule contours, Zernike moments, and other relevant physical criteria. """
     
     ## use otsu to find the threshold for molecules
     otsu_output = threshold_otsu(im)
-    ## find the contours using the otsu threshold
-    contours = find_contours(im, otsu_output)
+    
+    local_thresh = threshold_local(im, block_size=block_size, offset=offset*otsu_output)    
+    binary_local = im >= local_thresh
+    contours = find_contours(binary_local, .5)
+    
+   
 
     ##set contour length threshold:
     min_pixels = 2 * np.pi * np.sqrt(np.divide(minimum_radius**2, rescale[0]*rescale[1]))
@@ -137,9 +141,17 @@ def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), 
     new_contours = []
     used_indexes = []
     for ii, cc in enumerate(real_contours):
+        poly1 = polygon(cc[:,0], cc[:,1])
         for jj, cc2 in enumerate(real_contours):
             if jj>ii and ii not in used_indexes:
+                poly2 = polygon(cc2[:,0], cc2[:,1])
                 dist = distance.cdist(cc*rescale, cc2*rescale)
+                ## check if within another contour
+                answerx = np.isin(poly2[0], poly1[0])
+                answery = np.isin(poly2[1], poly1[1])
+                if np.all(np.logical_and(answerx, answery)):
+                    used_indexes.append(jj)
+                ## check if within minimum_separation of all other contours:
                 if np.amin(dist) < minimum_separation:
                     cc = np.concatenate((cc, cc2))
                     used_indexes.append(jj)
@@ -181,6 +193,7 @@ def get_contours(im, minimum_radius=.2e-9, minimum_separation=0, rescale=(1,1), 
         centerx_of_poly = int(np.mean(poly[0]))
         centery_of_poly = int(np.mean(poly[1]))
         translate_poly = (poly[0] - centerx_of_poly + center, poly[1] - centery_of_poly + center)
+        
         template[translate_poly] = im[poly] - otsu_output
         templates.append(template)
         
@@ -234,11 +247,9 @@ def sort_contours(zernike_moments, damping=.7, exemplars=None, method=None, n_cl
     
     if exemplars == None and (method == None or method == 'Birch') and n_clusters == None:
         af = Birch(threshold=damping, n_clusters=n_clusters).fit(zernike_moments)
-        return af.labels_
         
     elif n_clusters is not None and (method == None or method == 'AgglomerativeClustering'):
         af = AgglomerativeClustering(n_clusters=n_clusters).fit(zernike_moments)
-        return af.labels_
         
     elif exemplars is not None or method == 'AffinityPropagation':
         preferences = -10 * np.ones(zernike_moments.shape[0])
@@ -246,7 +257,17 @@ def sort_contours(zernike_moments, damping=.7, exemplars=None, method=None, n_cl
 
         af = AffinityPropagation(damping=damping, preference=preferences).fit(zernike_moments)
 
-        return af.labels_
+    ### re-sort the indexes from most to least plentiful
+    
+    bin_reorder = np.flipud(np.argsort(np.bincount(af.labels_)))
+    
+    new_labels = [0 for ii in range(len(af.labels_))]
+    for ii, ll in enumerate(bin_reorder):
+        for jj, label in enumerate(af.labels_):
+            if label == ll:
+                new_labels[jj] = ii
+      
+    return new_labels
 
 def sort_chirality(templates, sorted_labels, nrotations=10, category_indexes=None):
     chiral_labels = pairwise_chirality.sort_chirality(templates, sorted_labels, nrotations=nrotations, category_indexes=category_indexes)

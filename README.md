@@ -4,11 +4,11 @@ This project is a set of functions to automate the counting and categorization o
 
 We wrote about our approach to this problem here: <CITE ARTICLE>
 
-The functionality of this code was used to generate Fig. 3 of [this publication.](10.1002/anie.201812334 and 10.1002/ange.201812334)
+The functionality of this code was used to generate Fig. 3 of [this publication.](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334)
 
 ## Getting Started
 
-This is a glorified script that makes use of existing python libraries.  Written in python 3+, if unsure, install [Anaconda](https://www.anaconda.com/download).
+This is a glorified script that makes use of existing python libraries.  Written in python 3+, if unsure, start by installing [Anaconda](https://www.anaconda.com/download).
 
 ### Prerequisites
 
@@ -46,6 +46,6 @@ This project is licensed under the MIT License.
 
 ## Acknowledgements
 
-This project was inspired by the need to analyze the data that eventually resulted in [this publication.](10.1002/anie.201812334 and 10.1002/ange.201812334).
+This project was inspired by the need to analyze the data that eventually resulted in [this publication.](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334).
 We also made use of the data available from [this work.](https://www.nature.com/articles/nchem.2662)
 This happened at the [Nanosurf lab.](https://nanosurf.fzu.cz/)

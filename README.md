@@ -23,7 +23,7 @@ This is a glorified script that makes use of existing python libraries.  Written
 
 ### Installing
 
-Pull this repository.
+Clone this repository.
 
 ### Examples
 

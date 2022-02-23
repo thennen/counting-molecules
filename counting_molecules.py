@@ -322,7 +322,7 @@ def plot_template_grid(templates):
 
 def plot_unsorted(im, real_contours, filename, rescale=(1,1)):
     """ Saves png figure of outlined molecule contours, labelled by integers. """
-    plt.figure(figsize=(10,10))
+    plt.figure(constrained_layout=True, figsize=(6.73,6.73))
     extent = (0, im.shape[1]*rescale[1], im.shape[0]*rescale[0], 0)
     plt.imshow(im, cmap='gray', extent=extent)
     plt.gca().set_xlabel('x (m)')
@@ -342,7 +342,7 @@ def plot_unsorted(im, real_contours, filename, rescale=(1,1)):
     return
 
 
-def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False, filename=None):
+def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False, filename=None, dpi=300):
     """ Saves png of sorted molecules, outlined, with corresponding histogram. """
 
     partition = {k:0 for k in range(len(contours))}
@@ -352,7 +352,7 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False
         
     ### make the plot
     
-    plt.figure(figsize=(20,10))
+    plt.figure(constrained_layout=True, figsize=(6.73,3.37)) # RSC nanoscale 17.1cm width spec
     ax = plt.subplot(1,2,1)
     ax2 = plt.subplot(1,2,2)
     
@@ -405,7 +405,7 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False
         color = colors[partition[ii]]
         tempx = np.multiply(c[:,1], rescale[0])
         tempy = np.multiply(c[:,0], rescale[1])
-        ax.plot(tempx, tempy, c=color, linewidth=1.5)
+        ax.plot(tempx, tempy, c=color, linewidth=1)
     
         #use this line to number all the molecules
         #ax.annotate(str(ii), xy=(tempx[0], tempy[0]), color='g')
@@ -413,7 +413,7 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False
     ax2.bar(range(len(newbins)), newbins, color=colors)
     
     # ax2.hist(bins, bins=len(bins))
-    title = "total categories = " + str(max(partition.values()) + 1) + " total molecules = " + str(len(contours))
+    title = "total categories = " + str(max(partition.values()) + 1) +'\n' + " total molecules = " + str(len(contours))
     ax2.set_title(title)
     ax2.set_xlabel('molecule category')
     ax2.set_ylabel('count')
@@ -422,7 +422,7 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False
         if filename is None:
             filename = 'output_histogram'
         savename = filename + '.png'
-        plt.savefig(savename)
+        plt.savefig(savename, dpi=dpi)
     return
 
 
@@ -443,7 +443,7 @@ def manual_resorting(pickle_file=None, filename=None, im=None, contours=None, pa
     
     manual_categories = int(manual_categories)
 
-    fig = plt.figure(figsize=(20,10))
+    fig = plt.figure(constrained_layout=True, figsize=(6.73,3.37)) # RSC nanoscale 17.1cm width spec
     gs = matplotlib.gridspec.GridSpec(1,2)
     ax = plt.subplot(gs[0])
     ax2 = plt.subplot(gs[1])

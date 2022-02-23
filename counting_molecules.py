@@ -14,6 +14,8 @@ import matplotlib
 
 import matplotlib.pyplot as plt
 
+from matplotlib_scalebar.scalebar import ScaleBar
+
 import nanonispy as nap
 
 import mahotas
@@ -325,8 +327,16 @@ def plot_unsorted(im, real_contours, filename, rescale=(1,1)):
     plt.figure(constrained_layout=True, figsize=(6.73,6.73))
     extent = (0, im.shape[1]*rescale[1], im.shape[0]*rescale[0], 0)
     plt.imshow(im, cmap='gray', extent=extent)
-    plt.gca().set_xlabel('x (m)')
-    plt.gca().set_ylabel('y (m)')
+    
+    plt.gca().axis('off')
+
+    font_properties = dict()
+    font_properties['size'] = 12
+    scalebar = ScaleBar(dx=1, units='m', length_fraction=.5,
+    font_properties=font_properties, frameon=False, location=4, color='w')
+    
+    plt.gca().add_artist(scalebar)
+    
     for i, c in enumerate(real_contours):
         tempx = np.multiply(c[:,1], rescale[0])
         tempy = np.multiply(c[:,0], rescale[1])
@@ -358,8 +368,15 @@ def plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=False
     
     extent = (0, im.shape[1]*rescale[1], im.shape[0]*rescale[0], 0)
     ax.imshow(im, cmap='gray', extent=extent)
-    ax.set_xlabel('x (m)')
-    ax.set_ylabel('y (m)')
+    
+    ax.axis('off')
+
+    font_properties = dict()
+    font_properties['size'] = 12
+    scalebar = ScaleBar(dx=1, units='m', length_fraction=.5,
+    font_properties=font_properties, frameon=False, location=4, color='w')
+    
+    ax.add_artist(scalebar)
     
     cmap = matplotlib.cm.get_cmap('viridis')
     cmap2 = matplotlib.cm.get_cmap('plasma_r')
@@ -450,8 +467,15 @@ def manual_resorting(pickle_file=None, filename=None, im=None, contours=None, pa
 
     extent = (0, im.shape[1]*rescale[1], im.shape[0]*rescale[0], 0)
     ax.imshow(im, cmap='gray', extent=extent) #, vmin=np.amin(im)*.1)
-    ax.set_xlabel('x (m)')
-    ax.set_ylabel('y (m)')
+    
+    ax.axis('off')
+
+    font_properties = dict()
+    font_properties['size'] = 12
+    scalebar = ScaleBar(dx=1, units='m', length_fraction=.5,
+    font_properties=font_properties, frameon=False, location=4, color='w')
+    
+    ax.add_artist(scalebar)
 
     cmap = matplotlib.cm.get_cmap('viridis')
     cmap2 = matplotlib.cm.get_cmap('plasma_r')

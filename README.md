@@ -47,6 +47,6 @@ This project is licensed under the MIT License.
 
 ## Acknowledgements
 
-This project was inspired by the need to analyze the data that eventually resulted in [this publication.](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334).
+This project was inspired by the need to analyze the data that eventually resulted in [this publication](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334).
 We also made use of the data available from [this work.](https://www.nature.com/articles/nchem.2662)
 This happened at the [Nanosurf lab.](https://nanosurf.fzu.cz/)

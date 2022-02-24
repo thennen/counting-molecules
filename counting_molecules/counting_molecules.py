@@ -467,15 +467,8 @@ def manual_resorting(pickle_file=None, filename=None, im=None, contours=None, pa
 
     extent = (0, im.shape[1]*rescale[1], im.shape[0]*rescale[0], 0)
     ax.imshow(im, cmap='gray', extent=extent) #, vmin=np.amin(im)*.1)
-    
-    ax.axis('off')
-
-    font_properties = dict()
-    font_properties['size'] = 12
-    scalebar = ScaleBar(dx=1, units='m', length_fraction=.5,
-    font_properties=font_properties, frameon=False, location=4, color='w')
-    
-    ax.add_artist(scalebar)
+    ax.set_xlabel('x (m)')
+    ax.set_ylabel('y (m)')
 
     cmap = matplotlib.cm.get_cmap('viridis')
     cmap2 = matplotlib.cm.get_cmap('plasma_r')
@@ -646,8 +639,8 @@ def default_sort(filename, sort_by_chirality=False):
     """ Saves png images of sorted molecule histogram using default sorting parameters. """
     im, rescale = read_data(filename)
     im = filter_image(im)
-    contours, otsu_output, templates, contour_lengths, max_pixels, zernike_moments = get_contours(im, rescale=rescale, minimum_separation=0)
-    sorted_labels = sort_contours(zernike_moments, damping=.3, method='Birch')
+    contours_dict = get_contours(im, rescale=rescale, minimum_separation=0)
+    sorted_labels = sort_contours(contours_dict['zernike_moments'], damping=.3, method='Birch')
     if sort_by_chirality == True:
-        sorted_labels = sort_chirality(templates, sorted_labels)
-    plot_contours_histogram(im, contours, rescale, sorted_labels, saveplot=True, filename=filename)
+        sorted_labels = sort_chirality(contours_dict['templates'], sorted_labels)
+    plot_contours_histogram(im, contours_dict['contours'], contours_dict['rescale'], sorted_labels, saveplot=True, filename=filename)

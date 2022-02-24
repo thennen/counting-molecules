@@ -10,12 +10,13 @@ The functionality of this code was used to generate Fig. 3 of [this publication.
 
 This is a glorified script that makes use of existing python libraries.  Written in python 3+, if unsure, start by installing [Anaconda](https://www.anaconda.com/download).
 
-### Prerequisites
+### Prerequisites/ Dependencies
 
 * [Python 3+](https://www.anaconda.com/download)
 * [SciPy](https://www.scipy.org/)
 * [NumPy](http://www.numpy.org/)
 * [Matplotlib](https://matplotlib.org/)
+* [matplotlib-scalebar](https://pypi.org/project/matplotlib-scalebar/)
 * [Scikit-image](https://scikit-image.org/)
 * [Scikit-learn](https://scikit-learn.org/stable/)
 * [Nanonispy](http://ysebastien.me/nanonispy-my-first-python-package.html)

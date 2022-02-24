@@ -30,7 +30,7 @@ Clone this repository.
 
 `Helicene_example`, `APT_example` and `APT_2_example` are three example scripts that generate the figures in <CITE ARTICLE>.
 
-The data files they analyze can be downloaded [here](some data dump URL).
+The data files they analyze can be downloaded from this [figshare repo](https://doi.org/10.6084/m9.figshare.19217556).
 
 ## Versioning
 

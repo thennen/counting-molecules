@@ -19,7 +19,7 @@ This is a glorified script that makes use of existing python libraries.  Written
 * [matplotlib-scalebar](https://pypi.org/project/matplotlib-scalebar/)
 * [Scikit-image](https://scikit-image.org/)
 * [Scikit-learn](https://scikit-learn.org/stable/)
-* [Nanonispy](http://ysebastien.me/nanonispy-my-first-python-package.html)
+* [Nanonispy](https://github.com/underchemist/nanonispy)
 * [Mahotas](https://mahotas.readthedocs.io/en/latest/)
 
 ### Installing

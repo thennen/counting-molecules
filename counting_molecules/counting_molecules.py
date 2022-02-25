@@ -29,7 +29,7 @@ from skimage.draw import polygon
 from skimage.filters import gaussian, threshold_otsu, threshold_local
 from skimage.measure import find_contours
 
-import pairwise_chirality
+from . import pairwise_chirality
 
 ### read sxm file, requires nanonispy
 

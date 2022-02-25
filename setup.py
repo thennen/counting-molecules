@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import setuptools
 
 with open("README.md", "r", encoding="utf-8") as fh:
@@ -17,6 +19,6 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/thennen/counting-molecules/issues"
     },
     license='MIT',
-    packages=['counting_molecules', 'pairwise_chirality'],
+    packages=['counting_molecules'],
     install_requires=['numpy', 'matplotlib', 'matplotlib_scalebar', 'nanonispy', 'mahotas', 'scipy', 'sklearn', 'skimage'],
 )

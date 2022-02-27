@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-import setuptools, find_packages
+from setuptools import setup, find_packages
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 version = '0'
 
-setuptools.setup(
+setup(
     name='counting_molecules',
     version=version,
     author='Jack Hellerstedt and Tyler Hennen',

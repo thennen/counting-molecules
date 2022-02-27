@@ -19,6 +19,6 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/thennen/counting-molecules/issues"
     },
     license='MIT',
-    packages=['counting_molecules'],
-    install_requires=['numpy', 'matplotlib', 'matplotlib_scalebar', 'nanonispy', 'mahotas', 'scipy', 'sklearn', 'skimage'],
+    packages=find_packages(),
+    install_requires=['numpy', 'matplotlib', 'matplotlib_scalebar', 'nanonispy', 'mahotas', 'scipy', 'scikit-image', 'sklearn'],
 )

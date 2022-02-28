@@ -36,7 +36,12 @@ python setup.py install
 
 `Helicene_example`, `APT_example` and `APT_2_example` are three example scripts that generate the figures in [the ArXiv article](arxiv.org/abs/).
 
-The data files they analyze can be downloaded from this [figshare repo](https://doi.org/10.6084/m9.figshare.19217556).
+Steps to reproduce:
+
+1. Download the data files from this [figshare repo](https://doi.org/10.6084/m9.figshare.19217556) into the examples folder.
+2. Run the individual script files in the examples folder to generate the output summary.
+
+
 
 ## Versioning
 

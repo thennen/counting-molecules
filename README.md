@@ -2,7 +2,7 @@
 
 This project is a set of functions to automate the counting and categorization of molecules, specifically tailored for data generated from low temperature scanning probe microscopes.
 
-We wrote about our approach to this problem at [this ArXiv link](arxiv.org/abs/).
+We wrote about our approach to this problem at [this ArXiv article to be posted](arxiv.org/abs/).
 
 The functionality of this code was used to generate Fig. 3 of [this publication.](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334)
 
@@ -26,20 +26,18 @@ This is a glorified script that makes use of existing python libraries.  Written
 
 Clone this repository, and run:
 
-
 ```
 python setup.py install
-
 ```
 
 ### Examples
 
-`Helicene_example`, `APT_example` and `APT_2_example` are three example scripts that generate the figures in [the ArXiv article](arxiv.org/abs/).
+`Helicene_example`, `APT_example` and `APT_2_example` are three example scripts that generate the figures in [the ArXiv article to be posted](arxiv.org/abs/).
 
 Steps to reproduce:
 
 1. Download the data files from this [figshare repo](https://doi.org/10.6084/m9.figshare.19217556) into the examples folder.
-2. Run the individual script files in the examples folder to generate the output summary.
+2. Run the individual script files in the examples folder to generate each figure.
 
 
 

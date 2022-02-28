@@ -2,7 +2,7 @@
 
 This project is a set of functions to automate the counting and categorization of molecules, specifically tailored for data generated from low temperature scanning probe microscopes.
 
-We wrote about our approach to this problem here: <CITE ARTICLE>
+We wrote about our approach to this problem at [this ArXiv link](arxiv.org/abs/).
 
 The functionality of this code was used to generate Fig. 3 of [this publication.](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334)
 
@@ -10,7 +10,7 @@ The functionality of this code was used to generate Fig. 3 of [this publication.
 
 This is a glorified script that makes use of existing python libraries.  Written in python 3+, if unsure, start by installing [Anaconda](https://www.anaconda.com/download).
 
-### Prerequisites/ Dependencies
+### Dependencies
 
 * [Python 3+](https://www.anaconda.com/download)
 * [SciPy](https://www.scipy.org/)
@@ -26,9 +26,17 @@ This is a glorified script that makes use of existing python libraries.  Written
 
 Clone this repository.
 
+`pip` installation of `mahotas` is broken, `conda` install that first before installing `counting-molecules`
+
+```
+conda install mahotas
+pip install git+file:// ... /counting-molecules
+
+```
+
 ### Examples
 
-`Helicene_example`, `APT_example` and `APT_2_example` are three example scripts that generate the figures in <CITE ARTICLE>.
+`Helicene_example`, `APT_example` and `APT_2_example` are three example scripts that generate the figures in [the ArXiv article](arxiv.org/abs/).
 
 The data files they analyze can be downloaded from this [figshare repo](https://doi.org/10.6084/m9.figshare.19217556).
 

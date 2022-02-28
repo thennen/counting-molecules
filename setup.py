@@ -20,5 +20,5 @@ setup(
     },
     license='MIT',
     packages=find_packages(),
-    install_requires=['numpy', 'matplotlib', 'matplotlib_scalebar', 'nanonispy', 'mahotas', 'scipy', 'scikit-image', 'sklearn'],
+    install_requires=['matplotlib', 'matplotlib_scalebar', 'nanonispy', 'mahotas', 'scipy', 'scikit-image', 'sklearn'],
 )

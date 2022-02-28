@@ -24,13 +24,11 @@ This is a glorified script that makes use of existing python libraries.  Written
 
 ### Installing
 
-Clone this repository.
+Clone this repository, and run:
 
-`pip` installation of `mahotas` is broken, `conda` install that first before installing `counting-molecules`
 
 ```
-conda install mahotas
-pip install git+file:// ... /counting-molecules
+python setup.py install
 
 ```
 

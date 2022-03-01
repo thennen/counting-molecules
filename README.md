@@ -24,10 +24,10 @@ This is a glorified script that makes use of existing python libraries.  Written
 
 ### Installing
 
-Clone this repository, and run:
+Clone this repository, navigate to said directory, and run:
 
 ```
-python setup.py install
+pip install .
 ```
 
 ### Examples

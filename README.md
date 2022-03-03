@@ -1,5 +1,7 @@
 # counting-molecules
 
+[![DOI](https://zenodo.org/badge/141155345.svg)](https://zenodo.org/badge/latestdoi/141155345)
+
 This project is a set of functions to automate the counting and categorization of molecules, specifically tailored for data generated from low temperature scanning probe microscopes.
 
 The functionality of this code was used to generate Fig. 3 of [this publication.](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334)

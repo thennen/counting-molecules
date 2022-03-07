@@ -10,6 +10,8 @@ The functionality of this code was used to generate Fig. 3 of [this publication.
 
 This is a glorified script that makes use of existing python libraries.  Written in python 3+, if unsure, start by installing [Anaconda](https://www.anaconda.com/download).
 
+We wrote up an explanation (7 pages) of this package posted on the ArXiv [here](https://arxiv.org/abs/2203.01998).
+
 ### Dependencies
 
 * [Python 3+](https://www.anaconda.com/download)
@@ -32,7 +34,7 @@ pip install .
 
 ### Examples
 
-`Helicene_example`, `APT_example` and `APT_2_example` are three example scripts that generate the figures in [the ArXiv article to be posted](arxiv.org/abs/).
+`Helicene_example`, `APT_example` and `APT_2_example` are three example scripts that generate the figures in [the ArXiv article we wrote about this](https://arxiv.org/abs/2203.01998).
 
 Steps to reproduce:
 

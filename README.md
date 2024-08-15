@@ -2,15 +2,13 @@
 
 [![DOI](https://zenodo.org/badge/141155345.svg)](https://zenodo.org/badge/latestdoi/141155345)
 
-This project is a set of functions to automate the counting and categorization of molecules, specifically tailored for data generated from low temperature scanning probe microscopes.
+This project contains a set of functions to automate the counting and categorization of molecules, and is specifically tailored for data generated from low temperature scanning probe microscopes.
 
-The functionality of this code was used to generate Fig. 3 of [this publication.](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334)
+We described our approach in [this article](https://www.softwareimpacts.com/article/S2665-9638(22)00041-0/fulltext), and this code was also used to generate Fig. 3 of [this publication.](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334)
 
 ## Getting Started
 
 This is a glorified script that makes use of existing python libraries.  Written in python 3+, if unsure, start by installing [Anaconda](https://www.anaconda.com/download).
-
-We wrote up an explanation (7 pages) of this package posted on the ArXiv [here](https://arxiv.org/abs/2203.01998).
 
 ### Dependencies
 
@@ -26,7 +24,7 @@ We wrote up an explanation (7 pages) of this package posted on the ArXiv [here](
 
 ### Installing
 
-Clone this repository, navigate to said directory, and run:
+This package is not yet registered. To install, clone this repository, navigate to its directory, and run:
 
 ```
 pip install .

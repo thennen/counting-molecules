@@ -4,6 +4,9 @@
 
 This project contains a set of functions to automate the counting and categorization of molecules, and is specifically tailored for data generated from low temperature scanning probe microscopes.
 
+<img src=figure.png width=500>
+
+
 We described our approach in [this article](https://www.softwareimpacts.com/article/S2665-9638(22)00041-0/fulltext), and this code was also used to generate Fig. 3 of [this publication.](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334)
 
 ## Getting Started

@@ -7,7 +7,7 @@ This project contains a set of functions to automate the counting and categoriza
 <img src=figure.png width=500>
 
 
-We described our approach in [this article](https://www.softwareimpacts.com/article/S2665-9638(22)00041-0/fulltext), and the code was also used to generate Fig. 3 of [this publication](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334).
+We described our approach in [Software Impacts](https://www.softwareimpacts.com/article/S2665-9638(22)00041-0/fulltext), and the code was also used to generate Fig. 3 of [this publication](https://onlinelibrary.wiley.com/doi/abs/10.1002/anie.201812334).
 
 ## Getting Started
 
@@ -35,7 +35,7 @@ pip install .
 
 ### Examples
 
-`Helicene_example`, `APT_example` and `APT_2_example` are three example scripts that generate the figures in [the ArXiv article we wrote about this](https://arxiv.org/abs/2203.01998).
+`Helicene_example`, `APT_example` and `APT_2_example` are three example scripts that generate the figures in our [article](https://www.softwareimpacts.com/article/S2665-9638(22)00041-0/fulltext).
 
 Steps to reproduce:
 
